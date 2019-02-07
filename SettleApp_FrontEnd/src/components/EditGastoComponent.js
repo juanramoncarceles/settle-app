@@ -76,9 +76,14 @@ class EditGasto extends Component {
   // onEnviar connects with different methods in App.js depending if it's to create or edit
   submit(e) {
     e.preventDefault();
-    this.props.onEnviar(this.state);
-    // establishing toGastos = true makes it redirect to Gastos
-    this.setState({ toGastos: true });
+    // Simple form validation
+    if (this.state.usuario === "" || this.state.coste === "" || this.state.fecha === "") {
+      console.log("Usuario, coste o fecha no pueden estar vacios");
+    } else {
+      this.props.onEnviar(this.state);
+      // establishing toGastos = true makes it redirect to Gastos
+      this.setState({ toGastos: true });
+    }
   }
 
   cancel(e) {

@@ -57,3 +57,11 @@ i.modificar {
 button.btn-margin {
   margin-right: 10px;
 }
+
+/* JR */
+
+.settleUp__amount {
+  text-align: center;
+  width: 100%;
+  font-size: 3rem;
+}

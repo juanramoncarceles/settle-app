@@ -13,6 +13,11 @@ class SettleUp extends Component {
   constructor(props) {
     super(props);
 
+    // If in the browser there is data of the last settleUp I get it
+    this.state = localStorage.getItem("SettleUpPreview") ?
+      JSON.parse(localStorage.getItem("SettleUpPreview")) :
+      { amount: 0, debtor: "", receiver: "" };
+
     this.previewSettleUp = this.previewSettleUp.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     // this.submit = this.submit.bind(this);
@@ -70,7 +75,8 @@ class SettleUp extends Component {
 
     this.setState(
       settleUpObj,
-      () => console.log(this.state)
+      // I save on the browser the data of the settle up preview
+      () => localStorage.setItem("SettleUpPreview", JSON.stringify(this.state))
     );
   }
 
@@ -105,7 +111,7 @@ class SettleUp extends Component {
                     type="date"
                     name="startDate"
                     id="startDateInput"
-                    // Poner como default la fecha del ultimo settle up
+                    // Poner como default la fecha final del ultimo settle up
                     onChange={this.handleInputChange}
                   />
                 </FormGroup>
@@ -131,9 +137,10 @@ class SettleUp extends Component {
           </Form>
         </Col>
         <Col>
-          <Row>Valeria debe a Ramon</Row>
-          <Row>50.0 €</Row>
-          <Button>Set settle up point</Button>
+          <Row>Del {this.state.startDate} al {this.state.endDate}</Row>
+          <Row>{this.state.debtor} debe a {this.state.receiver}</Row>
+          <Row><p className="settleUp__amount">{this.state.amount} €</p></Row>
+          <Button>Confirm this settle up point</Button>
         </Col>
       </Row>
     );
