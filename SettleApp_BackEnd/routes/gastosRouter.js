@@ -31,7 +31,8 @@ const createDocument = req => {
     coste: req.body.coste,
     usuario: req.body.usuario ? new ObjectID(req.body.usuario) : "",
     fecha: req.body.fecha ? new Date(req.body.fecha) : "",
-    descripcion: req.body.descripcion
+    descripcion: req.body.descripcion,
+    settled: false
   };
 };
 
@@ -42,12 +43,13 @@ const updateDocument = req => {
   if (req.body.usuario) nuevosDatos.usuario = new ObjectID(req.body.usuario);
   if (req.body.fecha) nuevosDatos.fecha = new Date(req.body.fecha);
   if (req.body.descripcion) nuevosDatos.descripcion = req.body.descripcion;
+  if (req.body.settled) nuevosDatos.settled = req.body.settled;
   return nuevosDatos;
 };
 
-// RUTAS ESPECÍFICAS DE ESTA COLECCIÓN
+// RUTAS ESPECÍFICAS DE ESTA COLECCION
 
-// RUTAS '/gastos/usuarios'
+// RUTA '/gastos/usuarios'
 modelRouter
   .route("/usuarios")
   .all((req, res, next) => {
@@ -70,12 +72,21 @@ modelRouter
         console.log("Conectado al servidor");
         const db = client.db(DBNAME);
         const coll = db.collection(theCollection);
+        // This is where currently I get the 'gastos' sorted and limited
+        // With the lookup I get the data of the user inside the gasto obj which I am not using now
+        // Should be in the 'operations' file like a funtion
         coll
           .aggregate([
             {
+              $sort: { fecha: -1 }
+            },
+            {
+              $limit: 50
+            },
+            {
               $lookup: {
                 from: "usuarios",
-                localField: "usuario_vinculado_id",
+                localField: "usuario",
                 foreignField: "_id",
                 as: "datos_usuario"
               }
@@ -98,7 +109,7 @@ modelRouter
     res.end();
   });
 
-// RUTAS '/gastos/id/usuarios/id'
+// RUTA '/gastos/id/usuarios/id'
 modelRouter
   .route("/:idGasto/usuarios/:idUsuario")
   .all((req, res, next) => {
@@ -161,5 +172,5 @@ modelRouter.use(
   genericRouter
 );
 
-// exportamos todos los métodos
+// exportamos todos los metodos
 module.exports = modelRouter;
