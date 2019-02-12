@@ -75,15 +75,17 @@ class Gastos extends Component {
     // );
 
     // I create the columns of the table from "this.props.gastos"
+    // Temporarily I display the value of settled with a string, it will be an icon
     // The last two are icons used as buttons to delete and edit
     let rows = this.props.gastos
       ? this.props.gastos.map((item, i) => (
         <tr key={item._id}>
-          <td>{item.categoria}</td>
+          <td>{item.fecha.split("T")[0]}</td>
           <td>{item.coste}</td>
           <td>{nombresUsuarios[i]}</td>
-          <td>{item.fecha.split("T")[0]}</td>
+          <td>{item.categoria}</td>
           <td>{item.descripcion}</td>
+          <td>{item.settled.toString()}</td>
           <td>
             <i
               className="fa fa-lg fa-trash borrar"
@@ -105,11 +107,12 @@ class Gastos extends Component {
         <Table>
           <thead>
             <tr>
-              <th>Categoría</th>
-              <th>Coste</th>
-              <th>Usuario</th>
               <th>Fecha</th>
-              <th>Descripcion</th>
+              <th>Coste (€)</th>
+              <th>Usuario</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th>Saldado</th>
               <th />
             </tr>
           </thead>
