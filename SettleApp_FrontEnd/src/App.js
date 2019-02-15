@@ -29,7 +29,7 @@ class App extends Component {
     this.editaGasto = this.editaGasto.bind(this);
     this.borraUsuario = this.borraUsuario.bind(this);
     this.borraGasto = this.borraGasto.bind(this);
-    this.createSettleUp = this.createSettleUp.bind(this);
+    this.settleExpenses = this.settleExpenses.bind(this);
 
     this.getInitialData();
   }
@@ -96,7 +96,7 @@ class App extends Component {
     this.setState({
       usuarios: this.state.usuarios
     });
-    API.modificaUsuario(ob);
+    API.updateOneDocument(ob, "usuarios");
   }
 
   editaGasto(ob) {
@@ -106,13 +106,31 @@ class App extends Component {
     this.setState({
       gastos: this.state.gastos
     });
-    API.modificaGasto(ob);
+    API.updateOneDocument(ob, "gastos");
   }
 
-  createSettleUp(ob) {
-    // Recibe los datos para establecer un settle up point
+  settleExpenses(ids) {
+    // Recibe los ids de todos los gastos que tiene que marcar como settled
+    console.log(ids);
 
-    // API.createSettleUp();
+    let expensesSettled = [];
+
+    ids.forEach(id => {
+      this.state.gastos.forEach(gasto => {
+        if (id === gasto._id) {
+          gasto.settled = true;
+          expensesSettled.push(gasto);
+        }
+      });
+    });
+
+    this.setState({
+      gastos: this.state.gastos
+    });
+
+    console.log(expensesSettled);
+    // Esta funcion recibira el array con todos los gastos que se han saldado
+    // API.updateSeveralDocuments(expensesSettled);
   }
 
   render() {
@@ -175,7 +193,7 @@ class App extends Component {
                 <SettleUp
                   gastos={this.state.gastos}
                   usuarios={this.state.usuarios}
-                // onEnviar={this.createSettleUp}
+                  onSettle={this.settleExpenses}
                 />
               )}
             />
@@ -198,7 +216,6 @@ class App extends Component {
               render={props => (
                 <UsuarioEdit
                   usuarios={this.state.usuarios}
-                  // gastos={this.state.gastos} // Posible para controlar gastos asociados?
                   onEnviar={this.editaUsuario}
                   {...props}
                 />
@@ -209,6 +226,7 @@ class App extends Component {
               render={props => (
                 <GastoEdit
                   gastos={this.state.gastos}
+                  // los usuarios se podrian evitar ya que con el $lookup en DB se asocia datos de user por gasto
                   usuarios={this.state.usuarios}
                   onEnviar={this.editaGasto}
                   {...props}

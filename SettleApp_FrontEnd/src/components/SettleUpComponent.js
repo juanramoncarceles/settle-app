@@ -1,9 +1,10 @@
 /*
 Calculates the amount of money one user owes to
 the other one in the specified date range.
-It receives via props:
+It receives via props from App.js:
  1) list of expenses
  2) list of users
+ 3) settleExpenses method
 */
 
 import React, { Component } from 'react';
@@ -20,10 +21,39 @@ class SettleUp extends Component {
 
     this.previewSettleUp = this.previewSettleUp.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.getOldestExpenseNotSettled = this.getOldestExpenseNotSettled.bind(this);
     // this.submit = this.submit.bind(this);
   }
 
-  // Se deberia comprobar si la fecha esta fuera del rango de gastos ya disponibles por props y en tal caso ir a la db a buscar mas
+  // Look for the oldest expense not settled
+  // If the oldest already in the frontend is not settled then the DB should be checked
+  getOldestExpenseNotSettled() {
+    let found = false;
+    let counter = 0;
+    let oldestDate;
+    while (!found && counter < this.props.gastos.length) {
+      if (this.props.gastos[counter].settled) {
+        found = true;
+        if (counter === 0) {
+          console.log("all are already settled. Create an alert!");
+        } else {
+          oldestDate = this.props.gastos[counter - 1].fecha;
+        }
+        // If it has not been found yet and we are in the last one
+        // I assign the last date, but I should check the DB
+      } else if (counter === this.props.gastos.length - 1) {
+        oldestDate = this.props.gastos[counter].fecha;
+        console.log("The last in front is false so I should get more from DB");
+      }
+      counter++;
+    }
+    // Set the date as the startDate in the state so it can be set in the input
+    this.setState({
+      startDate: oldestDate.split("T")[0]
+    });
+  }
+
+
   previewSettleUp(e) {
     e.preventDefault();
 
@@ -32,6 +62,14 @@ class SettleUp extends Component {
     const expensesInRange = this.props.gastos.filter(
       gasto => new Date(gasto.fecha) >= sDate && new Date(gasto.fecha) <= eDate
     );
+
+    // An array with the Ids of the expenses in the specified period of time. 
+    // When the 'Settle Up' is confirmed this Ids are used to update the corresponding expenses.
+    // In case of saving an object 'settleUpObj' in DB it would be better to delete this field.
+    let expensesInRangeId = [];
+    expensesInRange.forEach(expense => {
+      expensesInRangeId.push(expense._id);
+    });
 
     // En este caso yo se que solo hay dos usuarios.
     // Hay que prepararlo para que haya que elegir dos de todos los disponibles.
@@ -73,6 +111,8 @@ class SettleUp extends Component {
       // en el caso de que las cantidades sean iguales y no se debe nada!
     }
 
+    settleUpObj.expensesInRangeId = expensesInRangeId;
+
     this.setState(
       settleUpObj,
       // I save on the browser the data of the settle up preview
@@ -102,7 +142,7 @@ class SettleUp extends Component {
     return (
       <Row>
         <Col>
-          <Form onSubmit={this.previewSettleUp}>
+          <Form>
             <Row>
               <Col>
                 <FormGroup>
@@ -111,9 +151,10 @@ class SettleUp extends Component {
                     type="date"
                     name="startDate"
                     id="startDateInput"
-                    // Poner como default la fecha final del ultimo settle up
+                    value={this.state.startDate ? this.state.startDate : ""}
                     onChange={this.handleInputChange}
                   />
+                  <Button onClick={this.getOldestExpenseNotSettled}>Ultimo gasto no saldado</Button>
                 </FormGroup>
               </Col>
               <Col>
@@ -131,7 +172,7 @@ class SettleUp extends Component {
             </Row>
             <Row>
               <Col>
-                <Button>Settle Up</Button>
+                <Button onClick={this.previewSettleUp}>Settle Up</Button>
               </Col>
             </Row>
           </Form>
@@ -140,7 +181,7 @@ class SettleUp extends Component {
           <Row>Del {this.state.startDate} al {this.state.endDate}</Row>
           <Row>{this.state.debtor} debe a {this.state.receiver}</Row>
           <Row><p className="settleUp__amount">{this.state.amount} €</p></Row>
-          <Button>Confirm this settle up point</Button>
+          <Button onClick={() => this.props.onSettle(this.state.expensesInRangeId)}>Confirm this settle up point</Button>
         </Col>
       </Row>
     );

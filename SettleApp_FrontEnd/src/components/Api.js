@@ -67,40 +67,42 @@ export default class Api {
       });
   }
 
-  static modificaGasto(obData) {
-    let id = obData._id;
-    let dataBody = [];
-    for (let property in obData) {
-      if (property === "_id") continue; // no interessa enviar '_id' via body
-      let encodedKey = encodeURIComponent(property);
-      let encodedValue = encodeURIComponent(obData[property]);
-      dataBody.push(encodedKey + "=" + encodedValue);
-    }
-    dataBody = dataBody.join("&");
-    fetch(`http://localhost:3001/gastos/${id}`, {
-      method: "PUT",
-      headers: new Headers({
-        "Content-Type": "application/x-www-form-urlencoded"
-      }),
-      body: dataBody
-    })
-      .then(resp => resp.json())
-      .then(resp => {
-        console.log(resp);
-      });
-  }
+  // static updateSeveralDocuments(obArray) {
+  //   TODO EL CODIGO INFERIOR ES VIEJO
+  //   let id = obData._id;
+  //   let dataBody = [];
+  //   for (let property in obData) {
+  //     if (property === "_id") continue; // no interessa enviar '_id' via body
+  //     let encodedKey = encodeURIComponent(property);
+  //     let encodedValue = encodeURIComponent(obData[property]);
+  //     dataBody.push(encodedKey + "=" + encodedValue);
+  //   }
+  //   dataBody = dataBody.join("&");
+  //   fetch(`http://localhost:3001/gastos/${id}`, {
+  //     method: "PUT",
+  //     headers: new Headers({
+  //       "Content-Type": "application/x-www-form-urlencoded"
+  //     }),
+  //     body: dataBody
+  //   })
+  //     .then(resp => resp.json())
+  //     .then(resp => {
+  //       console.log(resp);
+  //     });
+  // }
 
-  static modificaUsuario(obData) {
+  // This function is used either to update a user or an expense
+  static updateOneDocument(obData, collection) {
     let id = obData._id;
     let dataBody = [];
     for (let property in obData) {
-      if (property === "_id") continue; // no interessa enviar' _id' via body
+      if (property === "_id") continue; // The '_id' is not send with the body
       let encodedKey = encodeURIComponent(property);
       let encodedValue = encodeURIComponent(obData[property]);
       dataBody.push(encodedKey + "=" + encodedValue);
     }
     dataBody = dataBody.join("&");
-    fetch(`http://localhost:3001/usuarios/${id}`, {
+    fetch(`http://localhost:3001/${collection}/${id}`, {
       method: "PUT",
       headers: new Headers({
         "Content-Type": "application/x-www-form-urlencoded"
