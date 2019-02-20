@@ -109,8 +109,8 @@ class App extends Component {
     API.updateOneDocument(ob, "gastos");
   }
 
+  // Receives all the ids of the expenses to settle
   settleExpenses(ids) {
-    // Recibe los ids de todos los gastos que tiene que marcar como settled
     console.log(ids);
 
     let expensesSettled = [];
@@ -128,9 +128,7 @@ class App extends Component {
       gastos: this.state.gastos
     });
 
-    console.log(expensesSettled);
-    // Esta funcion recibira el array con todos los gastos que se han saldado
-    // API.updateSeveralDocuments(expensesSettled);
+    API.updateSeveralDocuments(ids);
   }
 
   render() {
