@@ -109,6 +109,55 @@ modelRouter
     res.end();
   });
 
+// RUTA '/gastos/settle'
+modelRouter
+  .route("/settle")
+  .all((req, res, next) => {
+    res.statusCode = 200;
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    res.setHeader("Content-Type", "application/json");
+    next();
+  })
+  // PATCH update the corresponding expenses
+  .post((req, res) => {
+    MongoClient.connect(
+      URL,
+      { useNewUrlParser: true }
+    )
+      .then(client => {
+        const db = client.db(DBNAME);
+        const settled = { settled: true };
+        // In the body there is an object named 'id' and an array of all ids
+        const expensesIds = req.body.id;
+        console.log(expensesIds.length + " ids of expenses received.");
+        dbOPS
+          .updateDocumentsById(db, theCollection, expensesIds, settled)
+          .then(doc => {
+            client.close();
+            res.end(JSON.stringify(doc));
+          })
+          .catch(err => {
+            res.end(JSON.stringify({ errmsg: `Error saldando gastos` }));
+            console.log(err);
+          });
+      })
+      .catch(err => {
+        res.end(JSON.stringify({ errmsg: `Error saldando gastos` }));
+        console.log(err);
+      });
+  })
+  .options((req, res, next) => {
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "POST"
+    );
+    res.end();
+  });
+
 // RUTA '/gastos/id/usuarios/id'
 modelRouter
   .route("/:idGasto/usuarios/:idUsuario")

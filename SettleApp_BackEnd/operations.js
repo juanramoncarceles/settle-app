@@ -45,3 +45,12 @@ exports.updateDocumentById = (db, collection, documentId, updateValues) => {
     null
   );
 };
+
+exports.updateDocumentsById = (db, collection, documentsIds, updateValues) => {
+  const coll = db.collection(collection);
+  const ids = documentsIds.map(id => ObjectID(id));
+  return coll.updateMany(
+    { _id: { $in: ids } },
+    { $set: updateValues }
+  );
+};
