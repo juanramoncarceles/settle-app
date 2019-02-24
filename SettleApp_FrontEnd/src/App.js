@@ -8,6 +8,7 @@ import Usuarios from "./components/UsuariosComponent";
 import GastoEdit from "./components/EditGastoComponent";
 import UsuarioEdit from "./components/EditUsuarioComponent";
 import SettleUp from "./components/SettleUpComponent";
+import SettleUpConfirm from "./components/SettleUpConfirmComponent";
 import P404 from "./components/P404";
 import API from "./components/Api";
 
@@ -20,6 +21,7 @@ class App extends Component {
     this.state = {
       usuarios: [],
       gastos: []
+      // previewSettleUp: {}
       // settleUps: []
     };
 
@@ -34,7 +36,7 @@ class App extends Component {
     this.getInitialData();
   }
 
-  // En el state estaran cargados todos los gastos desde el mas reciente hasta el ultimo settleUp o un limite de p.ej: 50
+  // En el state estaran cargados todos los gastos desde el mas reciente hasta el mas antiguo no saldado o un limite de p.ej: 50
   getInitialData() {
     API.getData(result => {
       if (result) {
@@ -156,7 +158,7 @@ class App extends Component {
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink className="link" to="/hagamos-cuentas">
+                  <NavLink exact className="link" to="/settle-up">
                     Hagamos cuentas
                   </NavLink>
                 </li>
@@ -186,12 +188,23 @@ class App extends Component {
               )}
             />
             <Route
-              path="/hagamos-cuentas"
+              exact
+              path="/settle-up"
               render={() => (
                 <SettleUp
                   gastos={this.state.gastos}
                   usuarios={this.state.usuarios}
+                />
+              )}
+            />
+            <Route
+              path="/settle-up/confirm"
+              render={({ location }) => (
+                <SettleUpConfirm
+                  gastos={this.state.gastos}
+                  usuarios={this.state.usuarios}
                   onSettle={this.settleExpenses}
+                  settleUpObj={location.state}
                 />
               )}
             />

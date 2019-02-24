@@ -4,64 +4,52 @@ the other one in the specified date range.
 It receives via props from App.js:
  1) list of expenses
  2) list of users
- 3) settleExpenses method
 */
 
 import React, { Component } from 'react';
 import { Col, Row, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Redirect } from "react-router-dom";
 
 class SettleUp extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      goToSettleUpConfirm: false
+    };
+
+    // PREPARARLO PARA QUE GUARDE SOLO LAS DOS FECHAS
     // If in the browser there is data of the last settleUp I get it
-    this.state = localStorage.getItem("SettleUpPreview") ?
-      JSON.parse(localStorage.getItem("SettleUpPreview")) :
-      { amount: 0, debtor: "", receiver: "" };
+    //this.state = localStorage.getItem("SettleUpDates") ?
+    //  JSON.parse(localStorage.getItem("SettleUpDates")) :
+    //  { startDate: "", endDate: "" };
 
     this.previewSettleUp = this.previewSettleUp.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
     this.getOldestExpenseNotSettled = this.getOldestExpenseNotSettled.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
     // this.submit = this.submit.bind(this);
   }
-
-  // Look for the oldest expense not settled
-  // If the oldest already in the frontend is not settled then the DB should be checked
-  getOldestExpenseNotSettled() {
-    let found = false;
-    let counter = 0;
-    let oldestDate;
-    while (!found && counter < this.props.gastos.length) {
-      if (this.props.gastos[counter].settled) {
-        found = true;
-        if (counter === 0) {
-          console.log("all are already settled. Create an alert!");
-        } else {
-          oldestDate = this.props.gastos[counter - 1].fecha;
-        }
-        // If it has not been found yet and we are in the last one
-        // I assign the last date, but I should check the DB
-      } else if (counter === this.props.gastos.length - 1) {
-        oldestDate = this.props.gastos[counter].fecha;
-        console.log("The last in front is false so I should get more from DB");
-      }
-      counter++;
-    }
-    // Set the date as the startDate in the state so it can be set in the input
-    this.setState({
-      startDate: oldestDate.split("T")[0]
-    });
-  }
-
 
   previewSettleUp(e) {
     e.preventDefault();
 
-    let sDate = new Date(this.state.startDate);
-    let eDate = new Date(this.state.endDate);
-    const expensesInRange = this.props.gastos.filter(
-      gasto => new Date(gasto.fecha) >= sDate && new Date(gasto.fecha) <= eDate
+    // Prepare the SettleUp object that will be passed
+    let settleUpObj = {};
+
+    const sDate = new Date(this.state.startDate);
+    const eDate = new Date(this.state.endDate);
+    const expensesInRange = this.props.gastos.filter(gasto =>
+      new Date(gasto.fecha) >= sDate && new Date(gasto.fecha) <= eDate && gasto.settled === false
     );
+
+    if (expensesInRange.length === 0) {
+      console.log("There are no expenses or all have been already settled");
+      // HABRIA QUE PONER CONTENIDO CON AVISO EN LA PAGINA CONFIRM SI ESTE ES EL CASO
+    }
+
+    // I pass the date string sice obj are not accepted
+    settleUpObj.startDate = this.state.startDate;
+    settleUpObj.endDate = this.state.endDate;
 
     // An array with the Ids of the expenses in the specified period of time. 
     // When the 'Settle Up' is confirmed this Ids are used to update the corresponding expenses.
@@ -70,6 +58,8 @@ class SettleUp extends Component {
     expensesInRange.forEach(expense => {
       expensesInRangeId.push(expense._id);
     });
+
+    settleUpObj.expensesIds = expensesInRangeId;
 
     // En este caso yo se que solo hay dos usuarios.
     // Hay que prepararlo para que haya que elegir dos de todos los disponibles.
@@ -97,8 +87,6 @@ class SettleUp extends Component {
       }
     });
 
-    // Prepare the settle object that could be saved later
-    let settleUpObj = {};
     if (moneyUser1 > moneyUser2) {
       settleUpObj.amount = (moneyUser1 - moneyUser2) / 2;
       settleUpObj.debtor = user2;
@@ -111,13 +99,40 @@ class SettleUp extends Component {
       // en el caso de que las cantidades sean iguales y no se debe nada!
     }
 
-    settleUpObj.expensesInRangeId = expensesInRangeId;
+    this.setState({
+      goToSettleUpConfirm: true,
+      settleUpObj: settleUpObj
+      // CAMBIARLO PARA QUE GUARDE SOLO LAS FECHAS
+      // () => localStorage.setItem("SettleUpDates", JSON.stringify(this.state))
+    });
+  }
 
-    this.setState(
-      settleUpObj,
-      // I save on the browser the data of the settle up preview
-      () => localStorage.setItem("SettleUpPreview", JSON.stringify(this.state))
-    );
+  // Look for the oldest expense not settled. FUNCIONA SI ESTAN MEZCLADAS SETTLE CON NO SETTLE?
+  // If the oldest already in the frontend is not settled then the DB should be checked
+  getOldestExpenseNotSettled() {
+    let found = false;
+    let counter = 0;
+    let oldestDate;
+    while (!found && counter < this.props.gastos.length) {
+      if (this.props.gastos[counter].settled) {
+        found = true;
+        if (counter === 0) {
+          console.log("all are already settled. Create an alert!");
+        } else {
+          oldestDate = this.props.gastos[counter - 1].fecha;
+        }
+        // If it has not been found yet and we are in the last one
+        // I assign the last date, but I should check the DB
+      } else if (counter === this.props.gastos.length - 1) {
+        oldestDate = this.props.gastos[counter].fecha;
+        console.log("The last in front is false so I should get more from DB");
+      }
+      counter++;
+    }
+    // Set the date as the startDate in the state so it can be set in the input
+    this.setState({
+      startDate: oldestDate.split("T")[0]
+    });
   }
 
   // generic method that assigns the content of an input field with its
@@ -139,6 +154,13 @@ class SettleUp extends Component {
   // }
 
   render() {
+    // If "Confirm Settle Up" has been clicked I redirect
+    if (this.state.goToSettleUpConfirm === true) {
+      return <Redirect to={{
+        pathname: "settle-up/confirm",
+        state: this.state.settleUpObj
+      }} />;
+    }
     return (
       <Row>
         <Col>
@@ -151,7 +173,7 @@ class SettleUp extends Component {
                     type="date"
                     name="startDate"
                     id="startDateInput"
-                    value={this.state.startDate ? this.state.startDate : ""}
+                    //value={this.state.startDate ? this.state.startDate : ""}
                     onChange={this.handleInputChange}
                   />
                   <Button onClick={this.getOldestExpenseNotSettled}>Ultimo gasto no saldado</Button>
@@ -164,7 +186,7 @@ class SettleUp extends Component {
                     type="date"
                     name="endDate"
                     id="endDateInput"
-                    // Poner como default la fecha actual
+                    //value={this.state.endDate ? this.state.endDate : ""}
                     onChange={this.handleInputChange}
                   />
                 </FormGroup>
@@ -172,16 +194,10 @@ class SettleUp extends Component {
             </Row>
             <Row>
               <Col>
-                <Button onClick={this.previewSettleUp}>Settle Up</Button>
+                <Button onClick={this.previewSettleUp}>Preview Settle Up</Button>
               </Col>
             </Row>
           </Form>
-        </Col>
-        <Col>
-          <Row>Del {this.state.startDate} al {this.state.endDate}</Row>
-          <Row>{this.state.debtor} debe a {this.state.receiver}</Row>
-          <Row><p className="settleUp__amount">{this.state.amount} €</p></Row>
-          <Button onClick={() => this.props.onSettle(this.state.expensesInRangeId)}>Confirm this settle up point</Button>
         </Col>
       </Row>
     );

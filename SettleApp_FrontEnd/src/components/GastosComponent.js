@@ -79,7 +79,7 @@ class Gastos extends Component {
     // The last two are icons used as buttons to delete and edit
     let rows = this.props.gastos
       ? this.props.gastos.map((item, i) => (
-        <tr key={item._id}>
+        <tr className={item.settled ? "bg_settled" : "bg_unsettled"} key={item._id}>
           <td>{item.fecha.split("T")[0]}</td>
           <td>{item.coste}</td>
           <td>{nombresUsuarios[i]}</td>
