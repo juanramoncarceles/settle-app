@@ -65,3 +65,11 @@ button.btn-margin {
   width: 100%;
   font-size: 3rem;
 }
+
+.bg_settled {
+  background-color: green;
+}
+
+.bg_unsettled {
+  background-color: orange;
+}
