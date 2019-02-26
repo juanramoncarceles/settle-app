@@ -18,16 +18,14 @@ class SettleUp extends Component {
       goToSettleUpConfirm: false
     };
 
-    // PREPARARLO PARA QUE GUARDE SOLO LAS DOS FECHAS
-    // If in the browser there is data of the last settleUp I get it
-    //this.state = localStorage.getItem("SettleUpDates") ?
-    //  JSON.parse(localStorage.getItem("SettleUpDates")) :
-    //  { startDate: "", endDate: "" };
+    // If in the browser there are dates from a previous settle up preview I get them
+    this.state = localStorage.getItem("SettleUpDates") ?
+      JSON.parse(localStorage.getItem("SettleUpDates")) :
+      { startDate: "", endDate: "" };
 
     this.previewSettleUp = this.previewSettleUp.bind(this);
     this.getOldestExpenseNotSettled = this.getOldestExpenseNotSettled.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    // this.submit = this.submit.bind(this);
   }
 
   previewSettleUp(e) {
@@ -47,7 +45,7 @@ class SettleUp extends Component {
       // HABRIA QUE PONER CONTENIDO CON AVISO EN LA PAGINA CONFIRM SI ESTE ES EL CASO
     }
 
-    // I pass the date string sice obj are not accepted
+    // I pass the iso date string since obj are not accepted
     settleUpObj.startDate = this.state.startDate;
     settleUpObj.endDate = this.state.endDate;
 
@@ -102,9 +100,11 @@ class SettleUp extends Component {
     this.setState({
       goToSettleUpConfirm: true,
       settleUpObj: settleUpObj
-      // CAMBIARLO PARA QUE GUARDE SOLO LAS FECHAS
-      // () => localStorage.setItem("SettleUpDates", JSON.stringify(this.state))
-    });
+    },
+      localStorage.setItem("SettleUpDates", JSON.stringify(
+        { startDate: this.state.startDate, endDate: this.state.endDate }
+      ))
+    );
   }
 
   // Look for the oldest expense not settled. FUNCIONA SI ESTAN MEZCLADAS SETTLE CON NO SETTLE?
@@ -135,23 +135,15 @@ class SettleUp extends Component {
     });
   }
 
-  // generic method that assigns the content of an input field with its
-  // equivalent value of the state, so when the form is send the state is ready
   // the input field shoud have a name, the same that is used in the state
   handleInputChange(event) {
-    const target = event.target;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const name = target.name;
+    const value = event.target.value;
+    const name = event.target.name;
 
     this.setState({
       [name]: value
     });
   }
-
-  // submit(e) {
-  //   e.preventDefault();
-  //   this.props.onEnviar(this.state);
-  // }
 
   render() {
     // If "Confirm Settle Up" has been clicked I redirect
@@ -173,7 +165,7 @@ class SettleUp extends Component {
                     type="date"
                     name="startDate"
                     id="startDateInput"
-                    //value={this.state.startDate ? this.state.startDate : ""}
+                    value={this.state.startDate ? this.state.startDate : ""}
                     onChange={this.handleInputChange}
                   />
                   <Button onClick={this.getOldestExpenseNotSettled}>Ultimo gasto no saldado</Button>
@@ -186,7 +178,7 @@ class SettleUp extends Component {
                     type="date"
                     name="endDate"
                     id="endDateInput"
-                    //value={this.state.endDate ? this.state.endDate : ""}
+                    value={this.state.endDate ? this.state.endDate : ""}
                     onChange={this.handleInputChange}
                   />
                 </FormGroup>
