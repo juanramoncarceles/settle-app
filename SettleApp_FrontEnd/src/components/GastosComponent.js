@@ -46,7 +46,7 @@ class Gastos extends Component {
       return <Redirect to={"/gasto/edit/" + this.state.modificarId} />;
     }
 
-    // With props.usuarios I create an array with all the user names linked to a expense
+    // With props.usuarios I create an array with all the user names linked to an expense
     //
     // Actualmente dentro de cada obj 'gasto' gracias al $lookup del aggregate ya hay
     // un campo 'datos_usuario' que contiene el 'nombre' y no se esta aprovechando,

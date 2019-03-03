@@ -3,7 +3,8 @@
 export default class Api {
   // GET all the data
   static getData(callback) {
-    let usuarios, gastos;
+    let usuarios, gastos, settleUps;
+    // esta ruta es asi por el lookUp, pero podria ser solo "/gastos"?
     fetch("http://localhost:3001/gastos/usuarios")
       .then(results => results.json())
       .then(data => {
@@ -15,7 +16,14 @@ export default class Api {
       .then(results => results.json())
       .then(data => {
         usuarios = data;
-        callback({ gastos, usuarios });
+      })
+      .then(() => {
+        return fetch("http://localhost:3001/settleUps");
+      })
+      .then(results => results.json())
+      .then(data => {
+        settleUps = data;
+        callback({ gastos, usuarios, settleUps });
       })
       .catch(err => callback(false));
   }
@@ -67,6 +75,29 @@ export default class Api {
       });
   }
 
+  static newSettleUp(obData, callback) {
+    let dataBody = [];
+    for (let property in obData) {
+      let encodedKey = encodeURIComponent(property);
+      let encodedValue = encodeURIComponent(obData[property]);
+      dataBody.push(encodedKey + "=" + encodedValue);
+    }
+    dataBody = dataBody.join("&");
+    console.log(dataBody);
+    fetch("http://localhost:3001/settleUps", {
+      method: "POST",
+      headers: new Headers({
+        "Content-Type": "application/x-www-form-urlencoded"
+      }),
+      body: dataBody
+    })
+      .then(resp => resp.json())
+      .then(newSettleUp => {
+        callback(newSettleUp);
+      });
+  }
+
+  // cambiar a PATCH y mandar un objeto con ids, accion
   static updateSeveralDocuments(idsArray) {
     let dataBody = [];
     idsArray.forEach(id => {

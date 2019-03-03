@@ -7,7 +7,8 @@ import Gastos from "./components/GastosComponent";
 import Usuarios from "./components/UsuariosComponent";
 import GastoEdit from "./components/EditGastoComponent";
 import UsuarioEdit from "./components/EditUsuarioComponent";
-import SettleUp from "./components/SettleUpComponent";
+import SettleUps from "./components/SettleUpsComponent";
+import SettleUpCreate from "./components/SettleUpCreateComponent";
 import SettleUpConfirm from "./components/SettleUpConfirmComponent";
 import P404 from "./components/P404";
 import API from "./components/Api";
@@ -20,9 +21,9 @@ class App extends Component {
 
     this.state = {
       usuarios: [],
-      gastos: []
+      gastos: [],
+      settleUps: []
       // previewSettleUp: {}
-      // settleUps: []
     };
 
     this.nuevoUsuario = this.nuevoUsuario.bind(this);
@@ -112,11 +113,15 @@ class App extends Component {
   }
 
   // Receives all the ids of the expenses to settle
-  settleExpenses(ids) {
-    console.log(ids);
+  settleExpenses(obj) {
+    // La creo aqui pero quizas no es el mejor lugar
+    obj.creationDate = new Date();
+
+    console.log(obj);
+
+    const ids = obj.relatedExpenses;
 
     let expensesSettled = [];
-
     ids.forEach(id => {
       this.state.gastos.forEach(gasto => {
         if (id === gasto._id) {
@@ -126,11 +131,21 @@ class App extends Component {
       });
     });
 
+    // concaternar el nuevo settle up y añadirlo aqui y luego tmb en el state?
+
     this.setState({
       gastos: this.state.gastos
     });
 
     API.updateSeveralDocuments(ids);
+    API.newSettleUp(obj, dbSettleUp => {
+      if (dbSettleUp) {
+        let nuevos = this.state.settleUps.concat([dbSettleUp]);
+        this.setState({
+          settleUps: nuevos
+        });
+      }
+    });
   }
 
   render() {
@@ -153,13 +168,13 @@ class App extends Component {
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink className="link" to="/usuarios">
-                    Usuarios
+                  <NavLink className="link" to="/settle-ups">
+                    Settle Ups!
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink exact className="link" to="/settle-up">
-                    Hagamos cuentas
+                  <NavLink className="link" to="/usuarios">
+                    Usuarios
                   </NavLink>
                 </li>
               </ul>
@@ -188,10 +203,9 @@ class App extends Component {
               )}
             />
             <Route
-              exact
-              path="/settle-up"
+              path="/settle-up/create"
               render={() => (
-                <SettleUp
+                <SettleUpCreate
                   gastos={this.state.gastos}
                   usuarios={this.state.usuarios}
                 />
@@ -205,6 +219,15 @@ class App extends Component {
                   usuarios={this.state.usuarios}
                   onSettle={this.settleExpenses}
                   settleUpObj={location.state}
+                />
+              )}
+            />
+            <Route
+              path="/settle-ups"
+              render={() => (
+                <SettleUps
+                  settleUps={this.state.settleUps}
+                  usuarios={this.state.usuarios}
                 />
               )}
             />
