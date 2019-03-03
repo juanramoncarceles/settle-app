@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const gastosRouter = require("./routes/gastosRouter");
 const usuariosRouter = require("./routes/usuariosRouter");
+const settleUpsRouter = require("./routes/settleUpsRouter");
 
 // URL
 const hostname = "localhost";
@@ -13,6 +14,7 @@ app.use(morgan("dev"));
 
 app.use("/gastos", gastosRouter);
 app.use("/usuarios", usuariosRouter);
+app.use("/settleUps", settleUpsRouter);
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
