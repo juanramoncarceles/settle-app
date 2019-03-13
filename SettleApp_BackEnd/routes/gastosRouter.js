@@ -132,7 +132,7 @@ modelRouter
         const db = client.db(DBNAME);
         const settled = { settled: true };
         // In the body there is an object named 'id' and an array of all ids
-        const expensesIds = req.body.id;
+        const expensesIds = req.body.id.split(",");
         console.log(expensesIds.length + " ids of expenses received.");
         dbOPS
           .updateDocumentsById(db, theCollection, expensesIds, settled)

@@ -26,6 +26,7 @@ class SettleUpCreate extends Component {
     this.previewSettleUp = this.previewSettleUp.bind(this);
     this.getOldestExpenseNotSettled = this.getOldestExpenseNotSettled.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.cancel = this.cancel.bind(this);
   }
 
   previewSettleUp(e) {
@@ -134,6 +135,10 @@ class SettleUpCreate extends Component {
     });
   }
 
+  cancel() {
+    this.setState({ toSettleUps: true });
+  }
+
   render() {
     // If "Confirm Settle Up" has been clicked I redirect
     if (this.state.goToSettleUpConfirm === true) {
@@ -141,6 +146,8 @@ class SettleUpCreate extends Component {
         pathname: "/settle-up/confirm",
         state: this.state.settleUpObj
       }} />;
+    } else if (this.state.toSettleUps === true) {
+      return <Redirect to="/settle-ups" />;
     }
     return (
       <Row>
@@ -176,6 +183,7 @@ class SettleUpCreate extends Component {
             <Row>
               <Col>
                 <Button onClick={this.previewSettleUp}>Preview Settle Up</Button>
+                <Button onClick={this.cancel}>Cancel</Button>
               </Col>
             </Row>
           </Form>

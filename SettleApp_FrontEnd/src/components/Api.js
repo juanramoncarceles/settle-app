@@ -83,7 +83,7 @@ export default class Api {
       dataBody.push(encodedKey + "=" + encodedValue);
     }
     dataBody = dataBody.join("&");
-    console.log(dataBody);
+
     fetch("http://localhost:3001/settleUps", {
       method: "POST",
       headers: new Headers({
@@ -99,12 +99,7 @@ export default class Api {
 
   // cambiar a PATCH y mandar un objeto con ids, accion
   static updateSeveralDocuments(idsArray) {
-    let dataBody = [];
-    idsArray.forEach(id => {
-      let encodedId = encodeURIComponent(id);
-      dataBody.push("id=" + encodedId);
-    });
-    dataBody = dataBody.join("&");
+    const dataBody = "id=" + encodeURIComponent(idsArray);
     fetch(`http://localhost:3001/gastos/settle`, {
       method: "POST",
       headers: new Headers({

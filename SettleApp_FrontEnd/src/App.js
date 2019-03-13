@@ -126,6 +126,7 @@ class App extends Component {
       this.state.gastos.forEach(gasto => {
         if (id === gasto._id) {
           gasto.settled = true;
+          // actualmente expensesSettled no lo utilizo para nada
           expensesSettled.push(gasto);
         }
       });

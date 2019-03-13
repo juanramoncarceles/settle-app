@@ -112,12 +112,12 @@ class SettleUps extends Component {
               onClick={() => this.props.onBorrar(item._id)}
             />
           </td>
-          <td>
+          {/* <td>
             <i
               className="fa fa-lg fa-edit modificar"
               onClick={() => this.modificar(item._id)}
             />
-          </td>
+          </td> */}
         </tr>
       ))
       : [];
